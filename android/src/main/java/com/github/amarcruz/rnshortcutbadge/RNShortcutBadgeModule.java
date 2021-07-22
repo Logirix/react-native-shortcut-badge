@@ -9,7 +9,7 @@ import android.content.pm.ResolveInfo;
 import android.os.Build;
 import android.content.SharedPreferences;
 import android.util.Log;
-
+import android.content.pm.ResolveInfo;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
@@ -33,6 +33,7 @@ public class RNShortcutBadgeModule extends ReactContextBaseJavaModule {
     private SharedPreferences mPrefs;
     private boolean mSupported = false;
     private boolean mIsXiaomi = false;
+    private ResolveInfo resolveInfo;
 
     RNShortcutBadgeModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -138,13 +139,19 @@ public class RNShortcutBadgeModule extends ReactContextBaseJavaModule {
      */
     private boolean setXiaomiBadge(final Context context, final int count) {
 
+        if (resolveInfo == null) {
+            Intent intent = new Intent(Intent.ACTION_MAIN);
+            intent.addCategory(Intent.CATEGORY_HOME);
+            resolveInfo = context.getPackageManager().resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY);
+        }
+
         mNotificationManager.cancel(mNotificationId);
         mNotificationId++;
 
         Notification.Builder builder = new Notification.Builder(context)
                 .setContentTitle("")
-                .setContentText("");
-        //.setSmallIcon(R.drawable.ic_launcher);
+                .setContentText("")
+                .setSmallIcon(resolveInfo.getIconResource());
         Notification notification = builder.build();
         ShortcutBadger.applyNotification(context, notification, count);
         mNotificationManager.notify(mNotificationId, notification);
